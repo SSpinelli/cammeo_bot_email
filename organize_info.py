@@ -2,6 +2,12 @@ import csv
 import seaborn as sns
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
+from datetime import datetime
+
+
+inputed_date = input(
+    "Escolha a data de início do seu formulário: (AAAA/MM/DD)"
+)
 
 
 def create_comments(dict_by_sector):
@@ -24,13 +30,14 @@ def create_charts(dict_by_sector):
                 "cortesia_atendente",
             ]:
                 values = [data[field] for data in sector_data]
-                sns.countplot(x=values)
-                plt.title(f"{field} in {sector}")
-                plt.xlabel(field)
-                plt.ylabel("Count")
-                plt.tight_layout()
-                pdf.savefig()
-                plt.clf()
+                if values:
+                    sns.countplot(x=values)
+                    plt.title(f"{field} in {sector}")
+                    plt.xlabel(field)
+                    plt.ylabel("Count")
+                    plt.tight_layout()
+                    pdf.savefig()
+                    plt.clf()
 
 
 def organize_csv_file():
@@ -42,19 +49,24 @@ def organize_csv_file():
         dict_data = []
 
         for new_input in data:
-            dict_data.append(
-                {
-                    "data_hora": new_input[0],
-                    "setores": new_input[1],
-                    "interesse_atendente": new_input[2],
-                    "clareza_atendente": new_input[3],
-                    "tempo_de_espera": new_input[4],
-                    "conhecimento_equipe": new_input[5],
-                    "cortesia_atendente": new_input[6],
-                    "comentario_adicional": new_input[7],
-                    "identificacao_cliente": new_input[9],
-                }
-            )
+            if new_input[0] != "":
+                date_obj = datetime.strptime(new_input[0], "%d/%m/%Y %H:%M:%S")
+                date_parsed = date_obj.strftime("%Y/%m/%d")
+
+                if date_parsed > inputed_date:
+                    dict_data.append(
+                        {
+                            "data_hora": new_input[0],
+                            "setores": new_input[1],
+                            "interesse_atendente": new_input[2],
+                            "clareza_atendente": new_input[3],
+                            "tempo_de_espera": new_input[4],
+                            "conhecimento_equipe": new_input[5],
+                            "cortesia_atendente": new_input[6],
+                            "comentario_adicional": new_input[7],
+                            "identificacao_cliente": new_input[9],
+                        }
+                    )
 
         dict_by_sector = {
             "Recepção": [],
@@ -79,6 +91,7 @@ def organize_csv_file():
             for i in range(len(sectors)):
                 dict_by_sector[sectors[i].strip()].append(data)
 
+    print(dict_by_sector)
     return dict_by_sector
 
 
